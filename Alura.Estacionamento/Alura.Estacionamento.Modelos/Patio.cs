@@ -16,10 +16,14 @@ namespace Alura.Estacionamento.Modelos
             Faturado = 0;
             veiculos = new List<Veiculo>();
         }
+
         private List<Veiculo> veiculos;
         private double faturado;
         public double Faturado { get => faturado; set => faturado = value; }
-        public List<Veiculo> Veiculos { get => veiculos; set => veiculos = value; }       
+        public List<Veiculo> Veiculos { get => veiculos; set => veiculos = value; }
+        private Operador _operadorPatio;
+        public Operador OperadorPatio { get => _operadorPatio; set => _operadorPatio = value; }
+
         public double TotalFaturado()
         {
             return this.Faturado;
@@ -33,7 +37,8 @@ namespace Alura.Estacionamento.Modelos
 
         public void RegistrarEntradaVeiculo(Veiculo veiculo)
         {
-            veiculo.HoraEntrada = DateTime.Now;            
+            veiculo.HoraEntrada = DateTime.Now;
+            GerarTicket(veiculo);
             this.Veiculos.Add(veiculo);            
         }
 
@@ -83,9 +88,31 @@ namespace Alura.Estacionamento.Modelos
             return informacao;
         }
 
-        
+        public Veiculo PesquisaVeiculoPorTicket(string idTicket)
+        {
+            return this.Veiculos.Where(v => v.IdTicket == idTicket).SingleOrDefault();
+        }
 
-       
-    
+        public Veiculo AlterarDadosVeiculo(Veiculo veiculoAlterado)
+        {
+            var veiculoTemp = PesquisaVeiculoPorTicket(veiculoAlterado.IdTicket);
+
+            veiculoTemp.AlterarDados(veiculoAlterado);
+
+            return veiculoTemp;
+        }
+
+        private string GerarTicket(Veiculo veiculo)
+        {
+            veiculo.IdTicket = Guid.NewGuid().ToString().Substring(0, 5);
+
+            veiculo.Ticket = "### Ticket Estacionamento Alura ###" +
+                             $">>> Identificador: { veiculo.IdTicket }" +
+                             $">>> Data/Hora de Entrada: { DateTime.Now }" +
+                             $">>> Placa Veículo: { veiculo.Placa }" + 
+                             $">>> Operador Patio: { OperadorPatio.Nome }";
+
+            return veiculo.Ticket;
+        }
     }
 }
